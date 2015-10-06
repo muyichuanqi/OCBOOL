@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>]和电脑猜拳</title>
+	<style>
+		*{
+			padding: 0;
+			margin: 0;
+		}
+		table{
+			width: 800px;
+			margin: 0 auto;
+			border: 0;
+			border-collapse: collapse;
+			margin-top: 50px;
+		}
+		table tr td {
+			border: 1px #ddd solid;
+			height: 30px;
+			vertical-align: middle;
+			text-align: center;
+			padding: 10px;
+		}
+		img {
+			width: 140px;
+			height: 133px;
+		}
+	</style>
+</head>
+<body>
+	<table>
+		<tr>
+			<td>玩家</td>
+			<td>电脑</td>
+		</tr>
+		<tr>
+			<td title="石头"><img src="images/1.jpg" alt="" id="peoImg"></td>
+			<td title="布"><img src="images/2.jpg" alt="" id="comImg"></td>
+		</tr>
+		<tr>
+			<td colspan="2" id="showRes">结果:你赢了</td>
+		</tr>
+
+		<tr>
+			<td><img src="images/0.jpg" alt="" id="imgNews"></td>
+			<td>
+				<div>你的选择</div>
+				<div>
+					<select name="" id="choose_sel">
+						<option value="0">剪刀</option>
+						<option value="1">石头</option>
+						<option value="2">布</option>
+					</select>
+					<input type="button" value="想好了，出拳" id="LetgoBtn"/>
+					<!-- <input type="button" value = "重新开始"> -->
+				</div>
+			</td>
+			<tr>
+				<td colspan="2">总局数: <em id="alljushu">0</em> , 赢： <em id="success">0</em> ， 输： <em id="error">0</em> ， 平： <em id="ping">0</em></td>
+			</tr>
+			<tr>
+				<td colspan="2"><input type="button" value="显示全部统计结果>>" id="end"></td>
+			</tr>
+		</tr>
+
+	</table>
+
+	<script>
+
+	//计算类
+	function chooseNum(num1,num2){
+		this.num1 = parseInt(num1);
+		this.num2 = parseInt(num2);
+		var val = this.num1-this.num2;
+		var res;
+
+		this.jisuan = function(){
+			if(val==1||val==-2)
+			{
+				res = "胜利";
+			}
+			else if(val==-1||val==2)
+			{
+				res = "输了";
+			}
+			else if(val==0)
+			{
+				res = "平了";
+			}
+			else
+			{
+				return;
+			}
+			return res;
+		}
+	}
+
+	//玩家类
+	//全局玩家
+	function allWanjia(num){//当前出的拳 和 胜负结果
+		this.num = num;
+		this.res = [];
+		this.ResArr = [];
+		this.addResArr = function(){
+			this.ResArr.push(this.num);
+		}
+	}
+	//创建的用户类
+	function people(num){
+		this.Wanjia = allWanjia;
+		this.Wanjia(num);
+		delete this.Wanjia; 
+	}
+	//创建的计算机类
+	function computer(num){
+		this.wanjia = allWanjia;
+		this.wanjia(num);
+		var randomNum = 0;
+		this.numres = function(){
+			var timer = Math.round(Math.random()*100);
+			var mytimer = setInterval(function(){
+				randomNum = defaults.randomNum++%3;
+			},timer);
+			setTimeout(function(){
+				clearInterval(mytimer);
+			},1000);
+			this.num = randomNum;
+			return this.num;
+		}
+		delete this.wanjia;
+	}
+
+	//实例化
+	var peo = new people();
+	var compu = new computer();
+	//全局对象进行dom获取的操作
+	var defaults = {
+		selVal:document.getElementById("choose_sel"),
+		imgNews:document.getElementById("imgNews"),
+		LetgoBtn:document.getElementById("LetgoBtn"),
+		peoImg:document.getElementById("peoImg"),
+		comImg:document.getElementById("comImg"),
+		showRes:document.getElementById("showRes"),
+		alljushu:document.getElementById("alljushu"),
+		success:document.getElementById("success"),
+		errors:document.getElementById("error"),
+		ping:document.getElementById("ping"),
+		endJieguo:document.getElementById("end"),
+		jieguo:[],
+		onresPeo:null,
+		onresCom:null,
+		resSuccess:0,
+		resError:0,
+		resping:0,
+		randomNum:0
+	}
+
+	//全局函数  
+	function allPlay(){
+		//进行sel操作
+		defaults.selVal.onchange = function(){
+			var selIndex = defaults.selVal.selectedIndex;
+			switch(selIndex){
+				case 0:
+				defaults.imgNews.src = "images/0.jpg";
+				break;
+				case 1:
+				defaults.imgNews.src = "images/1.jpg";
+				break;
+				case 2:
+				defaults.imgNews.src = "images/2.jpg";
+				break;
+			}
+		}
+		//点击触发事件
+		defaults.LetgoBtn.onclick = function(){
+			var selIndex = defaults.selVal.selectedIndex;
+			var choose1 = new chooseNum(selIndex,compu.numres());
+			defaults.onresPeo = choose1.jisuan();
+			console.log(compu.numres());
+			switch(defaults.onresPeo)
+			{
+				case "胜利":
+				defaults.onresCom = "输了";
+				break;
+				case "输了":
+				defaults.onresCom = "胜利";
+				break;
+				case "平了":
+				defaults.onresCom = "平了";
+				break;
+
+			}
+			peo.num = selIndex;
+			peo.addResArr();
+			compu.addResArr();
+			peo.res.push(defaults.onresPeo);
+			defaults.jieguo = peo.res
+
+			compu.res.push(defaults.onresCom);
+	
+			//修改顶部照片特效
+			defaults.peoImg.src = "images/" + selIndex + ".jpg";
+			var mytimer = setInterval(function(){
+				defaults.comImg.src = "images/" + defaults.randomNum++%3 + ".jpg";
+			},100);
+			setTimeout(function(){
+				clearInterval(mytimer);
+				defaults.comImg.src = "images/" + compu.num + ".jpg";
+				defaults.showRes.innerHTML = defaults.onresPeo;
+			},2000);
+			
+			
+			//改变底部信息
+			defaults.alljushu.innerHTML = defaults.jieguo.length;
+			//console.log(defaults.jieguo.length)
+			if(defaults.onresPeo=="胜利"){
+				defaults.resSuccess++;
+			}
+			else if(defaults.onresPeo=="输了"){
+				defaults.resError++;
+			}
+			else if(defaults.onresPeo=="平了"){
+				defaults.resping++;
+			}
+			//console.log(defaults.resSuccess)
+			defaults.success.innerHTML = defaults.resSuccess;
+			defaults.errors.innerHTML = defaults.resError;
+			defaults.ping.innerHTML = defaults.resping;
+
+		}
+
+		//显示全局统计结果
+		defaults.endJieguo.onclick = function(){
+			var mynewWindow = window.open();
+			mynewWindow.document.write(22)
+		}
+	}
+	//程序主入口
+	allPlay();
+	
+
+	</script>
+</body>
+</html>
